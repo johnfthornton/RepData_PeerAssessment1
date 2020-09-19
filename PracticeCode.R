@@ -1,26 +1,11 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
 
-
-## Loading and preprocessing the data
-
-```{r}
 ActivityData <- read.csv(file = "Activity.csv")
 ActivityData$date <- as.Date(ActivityData$date,format = "%Y-%m-%d")
 ActivityData$steps <- as.numeric(ActivityData$steps)
-```
 
-
-
-## What is mean total number of steps taken per day?
-
-```{r}
 library(dplyr)
 library(ggplot2)
+
 dailyTotal <- ActivityData %>% group_by(date) %>% 
   summarise(steps = sum(steps,na.rm=TRUE))
 
@@ -32,11 +17,7 @@ mean(dailyTotal$steps)
 
 ##calculating the median
 median(dailyTotal$steps)
-```
 
-## What is the average daily activity pattern?
-
-```{R}
 ##calculate the average number of steps in each 5 min interval & removing NAs
 FiveMinSummary <- ActivityData %>% group_by(interval) %>%
   summarise(steps = mean(steps, na.rm = TRUE))
@@ -47,12 +28,10 @@ plot(FiveMinSummary$interval, FiveMinSummary$steps, type = "l",
 ##calculate the interval with the most steps on average
 maxSteps <- which.max(FiveMinSummary$steps)
 FiveMinSummary$interval[maxSteps]
-```
 
+##Number of missing data entries
+sum(is.na(ActivityData$steps))
 
-
-## Imputing missing values
-```{r}
 ##Merge the data to fill in the NAs with the average for that five min period
 MergedData <- merge(ActivityData, FiveMinSummary, by.x = "interval", by.y = "interval", all=TRUE)
 MergedData$steps.z <- coalesce(MergedData$steps.x, MergedData$steps.y)
@@ -66,10 +45,7 @@ hist(dailyMergedTotal$steps.z, main = "Total Steps Taken a Day", xlab = "number 
 ##calculate updated mean & median
 mean(dailyMergedTotal$steps.z)
 median(dailyMergedTotal$steps.z)
-```
 
-## Are there differences in activity patterns between weekdays and weekends?
-```{r}
 ##create weekend variable in dataset
 MergedData$TypeOfDay <- weekdays(MergedData$date)
 MergedData$TypeOfDay[MergedData$TypeOfDay  %in% c('Saturday','Sunday') ] <- "weekend"
@@ -87,4 +63,4 @@ qplot(interval,
       ylab = "Total Steps",
       geom = c("line")) + 
       facet_wrap(~TypeOfDay, ncol = 1)
-```
+
